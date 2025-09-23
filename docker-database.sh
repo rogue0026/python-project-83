@@ -1,0 +1,1 @@
+docker run -d -p 5432:5432 --name page_analyzer -e POSTGRES_USER=user -e POSTGRES_PASSWORD=password -e POSTGRES_DB=page_analyzer postgres

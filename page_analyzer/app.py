@@ -41,6 +41,16 @@ def urls_index():
     )
 
 
+@app.get("/urls/<id>")
+def url_show(id):
+    url_info = urls_repository.find(id)
+    if url_info:
+        return render_template(
+            "url_info.html",
+            site=url_info)
+
+
+
 @app.post("/urls")
 def urls():
     form_data = request.form.to_dict()
