@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 import os
 from page_analyzer.urls import UrlsRepository
 from page_analyzer.urls import URLChecksRepository
+from page_analyzer.urls import create_connection_pool
 from flask import (
     Flask,
     render_template,
@@ -21,8 +22,10 @@ load_dotenv()
 dsn = os.getenv("DATABASE_URL")
 app = Flask(__name__)
 app.config["SECRET_KEY"] = secrets.token_hex(16)
-urls_repository = UrlsRepository(dsn)
-url_check_repository = URLChecksRepository(dsn)
+
+conn_pool = create_connection_pool(5, 10, dsn)
+urls_repository = UrlsRepository(conn_pool)
+url_check_repository = URLChecksRepository(conn_pool)
 
 
 @app.route("/")

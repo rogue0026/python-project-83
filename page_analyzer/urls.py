@@ -4,9 +4,12 @@ from psycopg2 import pool
 from datetime import datetime
 
 
+def create_connection_pool(min_conn: int, max_conn: int, dsn: str) -> pool.SimpleConnectionPool:
+    return pool.SimpleConnectionPool(5, 10, dsn)
+
+
 class UrlsRepository:
-    def __init__(self, dsn: str):
-        conn_pool = pool.SimpleConnectionPool(5, 10, dsn)
+    def __init__(self, conn_pool: pool.SimpleConnectionPool):
         self.conn_pool = conn_pool
 
     def save(self, url: str, created_at) -> tuple:
@@ -75,8 +78,8 @@ class UrlsRepository:
 
 
 class URLChecksRepository:
-    def __init__(self, dsn: str):
-        self.conn_pool = pool.SimpleConnectionPool(5, 10, dsn)
+    def __init__(self, conn_pool: pool.SimpleConnectionPool):
+        self.conn_pool = conn_pool
 
     def save(self, url_id: int):
         db_connection = self.conn_pool.getconn()
