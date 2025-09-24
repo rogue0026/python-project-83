@@ -18,9 +18,9 @@ from flask import (
 
 load_dotenv()
 dsn = os.getenv("DATABASE_URL")
-urls_repository = UrlsRepository(dsn)
 app = Flask(__name__)
 app.config["SECRET_KEY"] = secrets.token_hex(16)
+urls_repository = UrlsRepository(dsn)
 
 
 @app.route("/")
