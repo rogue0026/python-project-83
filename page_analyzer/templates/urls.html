@@ -36,12 +36,12 @@
         {% if sites %}
           {% for site in sites %}
           <tr>
-            <td>{{ site['id'] }}</td>
+            <td>{{ site.id }}</td>
             <td>
-              <a href="{{ url_for("url_show", id=site["id"]) }}">{{ site['name'] }}</a>
+              <a href="{{ url_for("url_show", id=site.id) }}">{{ site.name }}</a>
             </td>
-            <td>{{ site['last_check'] }}</td>
-            <td>{{ site['response_code'] }}</td>
+            <td>{{ site.last_check }}</td>
+            <td>{{ site.status_code }}</td>
           </tr>
           {% endfor %}
         {% endif %}
