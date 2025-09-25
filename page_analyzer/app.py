@@ -1,3 +1,4 @@
+import requests
 import datetime
 import os
 from urllib.parse import urlparse
@@ -6,6 +7,7 @@ import validators
 from dotenv import load_dotenv
 from page_analyzer.urls import UrlsRepository
 from page_analyzer.urls import URLChecksRepository
+from page_analyzer.parser import SiteChecker
 from flask import (
     Flask,
     render_template,
@@ -30,7 +32,6 @@ url_check_repository = URLChecksRepository(dsn)
 def index():
     messages = get_flashed_messages(
         with_categories=True)
-    print(messages)
     return render_template(
         "index.html",
         messages=messages)
@@ -49,11 +50,13 @@ def urls_index():
 def url_show(id):
     url_info = urls_repository.find(id)
     url_checks = url_check_repository.index(id)
+    error = get_flashed_messages(with_categories=True)
     if url_info:
         return render_template(
             "url_info.html",
             site=url_info,
-            checks=url_checks)
+            checks=url_checks,
+            errors=error)
 
 
 @app.post("/urls")
@@ -74,7 +77,25 @@ def urls():
 
 @app.post("/urls/<id>/checks")
 def create_new_check(id):
-    url_check_repository.save(id)
+    url_info = urls_repository.find(id)
+    url_address = url_info.get("name")
+    try:
+        response = requests.get(url_address)
+        response.raise_for_status()
+        checker = SiteChecker(response.text)
+        h1_content = checker.check_for_h1()
+        meta = checker.check_for_meta_description()
+        title_content = checker.check_for_title()
+        check_info = {
+            "url_id": id,
+            "status_code": response.status_code,
+            "h1": h1_content if h1_content else "",
+            "title": title_content if title_content else "",
+            "description": meta if meta else ""
+        }
+        url_check_repository.save(check_info)
+    except (requests.HTTPError, requests.ConnectionError) as e:
+        flash("Произошла ошибка при проверке", "error")
     return redirect(url_for("url_show", id=id))
 
 

@@ -34,9 +34,9 @@ class UrlsRepository:
         with self._connect_to_db() as db_connection:
             with db_connection.cursor(cursor_factory=NamedTupleCursor) as cursor:
                 sql_query = """
-                            select urls.id, \
-                                   name, \
-                                   url_checks.status_code, \
+                            select urls.id, 
+                                   name, 
+                                   url_checks.status_code, 
                                    max(url_checks.created_at) as last_check
                             from urls
                                      left join url_checks on urls.id = url_checks.url_id
@@ -74,11 +74,16 @@ class URLChecksRepository:
     def _connect_to_db(self):
         return psycopg2.connect(self.dsn)
 
-    def save(self, url_id: int):
+    def save(self, check_info: dict):
         with self._connect_to_db() as db_connection:
-            sql_query = "INSERT into url_checks(url_id, created_at) VALUES (%s, %s);"
+            sql_query = "INSERT INTO url_checks(url_id, status_code, h1, title, description, created_at) VALUES (%s, %s, %s, %s, %s, %s)"
             with db_connection.cursor() as cursor:
-                cursor.execute(sql_query, (url_id, datetime.now()))
+                cursor.execute(sql_query, (check_info["url_id"],
+                                           check_info["status_code"],
+                                           check_info["h1"],
+                                           check_info["title"],
+                                           check_info["description"],
+                                           datetime.now()))
             db_connection.commit()
 
     def index(self, url_id) -> list[dict]:
