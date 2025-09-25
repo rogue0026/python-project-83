@@ -1,10 +1,11 @@
 import psycopg2
-import os
 from psycopg2.extras import NamedTupleCursor
 from psycopg2 import pool
 from datetime import datetime
 
-dsn = os.getenv("DATABASE_URL")
+
+def init_pool(dsn: str) -> pool.SimpleConnectionPool:
+    return pool.SimpleConnectionPool(5, 10, dsn)
 
 
 class UrlsRepository:
