@@ -1,9 +1,10 @@
 import validators
 
 
-def validate_url(url_string: str) -> str | None:
+def validate_url(url_string: str) -> tuple | None:
+    errors = {}
     if len(url_string) == 0:
-        return "URL string can't be blank"
+        return "error", "URL string can't be blank"
     if validators.url(url_string) is not True:
-        return "Некорректный URL"
+        return "error", "Некорректный URL"
     return None

@@ -16,8 +16,8 @@ from flask import (
 )
 
 from page_analyzer.parser import SiteChecker
-from page_analyzer.url_validator import validate_url
 from page_analyzer.urls import URLChecksRepository, UrlsRepository
+from page_analyzer.url_validator import validate_url
 
 load_dotenv()
 app = Flask(__name__)
@@ -64,9 +64,10 @@ def urls():
     form_data = request.form.to_dict()
     url_string = form_data.get("url")
     err_msg = validate_url(url_string)
+    print(err_msg)
     if err_msg:
-        flash(err_msg, category="error")
-        return redirect(url_for("index"))
+        return render_template(
+            "index.html", messages=[err_msg]), 422
     parsed_url = urlparse(url_string)
     status, msg = urls_repository.save(
         f"{parsed_url.scheme}://{parsed_url.hostname}",
