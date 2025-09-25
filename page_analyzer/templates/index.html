@@ -18,6 +18,17 @@
             </div>
         </nav>
     </header>
+    {% for message in messages %}
+                                {% if message[0] == 'error' %}
+                                    <div class="alert alert-danger">
+                                        {{ message[1] }}
+                                    </div>
+                                {% else %}
+                                    <div class="alert alert-success">
+                                        {{ message[1] }}
+                                    </div>
+                                {% endif %}
+    {% endfor %}
     <main class="flex-grow-1">
         <div class="container-lg mt-3">
             <div class="row">
@@ -29,19 +40,6 @@
                         <input type="text" name="url" placeholder="https://www.example.com" value="" class="form-control form-control-lg" required>
                         <input type="submit" class="btn btn-primary  btn-lg ms-3 px-5 text-uppercase mx-3" value="Проверить">
                     </form>
-                    {% for message in messages %}
-                                {% if message[0] == 'error' %}
-                                    <br>
-                                    <div class="alert alert-danger">
-                                        {{ message[1] }}
-                                    </div>
-                                {% else %}
-                                    <br>
-                                    <div class="alert alert-success">
-                                        {{ message[1] }}
-                                    </div>
-                                {% endif %}
-                    {% endfor %}
                 </div>
             </div>
         </div>

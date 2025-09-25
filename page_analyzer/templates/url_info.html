@@ -18,10 +18,16 @@
          </div>
         </nav>
      </header>
-     {% for error in errors %}
-        <div class="alert alert-danger">
-            <span>{{ error[1] }}</span>
-        </div>
+     {% for message in messages %}
+        {% if message[0] == "success" %}
+            <div class="alert alert-success">
+                <span>{{ message[1] }}</span>
+            </div>
+        {% else %}
+            <div class="alert alert-danger">
+                <span>{{ message[1] }}</span>
+            </div>
+        {% endif %}
      {% endfor %}
     <main class="flex-grow-1">
         <div class="container-lg mt-3">

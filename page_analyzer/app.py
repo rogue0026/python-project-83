@@ -1,26 +1,25 @@
-import requests
 import datetime
 import os
-from urllib.parse import urlparse
 import secrets
-import validators
+from urllib.parse import urlparse
+
+import requests
 from dotenv import load_dotenv
-from page_analyzer.urls import UrlsRepository
-from page_analyzer.urls import URLChecksRepository
-from page_analyzer.parser import SiteChecker
 from flask import (
     Flask,
+    flash,
+    get_flashed_messages,
+    redirect,
     render_template,
     request,
     url_for,
-    redirect,
-    flash,
-    get_flashed_messages
 )
 
+from page_analyzer.parser import SiteChecker
+from page_analyzer.url_validator import validate_url
+from page_analyzer.urls import URLChecksRepository, UrlsRepository
 
 load_dotenv()
-
 app = Flask(__name__)
 app.config["SECRET_KEY"] = secrets.token_hex(16)
 dsn = os.getenv("DATABASE_URL")
@@ -50,13 +49,14 @@ def urls_index():
 def url_show(id):
     url_info = urls_repository.find(id)
     url_checks = url_check_repository.index(id)
-    error = get_flashed_messages(with_categories=True)
+    message = get_flashed_messages(with_categories=True)
     if url_info:
         return render_template(
             "url_info.html",
             site=url_info,
             checks=url_checks,
-            errors=error)
+            messages=message)
+    return "Not found", 404
 
 
 @app.post("/urls")
@@ -94,14 +94,7 @@ def create_new_check(id):
             "description": meta if meta else ""
         }
         url_check_repository.save(check_info)
-    except (requests.HTTPError, requests.ConnectionError) as e:
+        flash("Страница успешно проверена", "success")
+    except (requests.HTTPError, requests.ConnectionError):
         flash("Произошла ошибка при проверке", "error")
     return redirect(url_for("url_show", id=id))
-
-
-def validate_url(url_string: str) -> str | None:
-    if len(url_string) == 0:
-        return "URL string can't be blank"
-    if validators.url(url_string) is not True:
-        return "Invalid URL format"
-    return None
