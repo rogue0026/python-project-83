@@ -18,7 +18,7 @@ class UrlsRepository:
 
     def save(self, url: str, created_at) -> tuple:
         sql_query = "INSERT INTO urls (name, created_at) VALUES (%s, %s);"
-        message = tuple()
+        message = None
         with self._connect_to_db() as db_connection:
             with db_connection.cursor() as cursor:
                 try:

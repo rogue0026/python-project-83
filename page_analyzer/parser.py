@@ -14,9 +14,8 @@ class SiteChecker:
 
     def check_for_title(self) -> str | None:
         title = self._parsed_page.find("title")
-        if title:
-            if len(title.contents) > 0:
-                return title.contents[0].text
+        if title and len(title.contents) > 0:
+            return title.contents[0].text
         return None
 
     def check_for_meta_description(self) -> str | None:
