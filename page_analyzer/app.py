@@ -76,6 +76,7 @@ def check_url(id):
         }
         url_checks_repository.save(check_info)
         checks = url_checks_repository.index(id)
+        flash("Страница успешно проверена", "success")
         return render_template(
             "url_checks.html", url=url_info, checks=checks), 200
     except (requests.HTTPError, requests.ConnectionError):
