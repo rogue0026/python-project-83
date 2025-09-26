@@ -9,40 +9,42 @@
     </head>
 <body class="min-vh-100 d-flex flex-column">
     {% include "layouts/header.html" %}
-     {% for message in messages %}
-        {% if message[0] == "success" %}
-            <div class="alert alert-success">
-                <span>{{ message[1] }}</span>
-            </div>
-        {% else %}
-            <div class="alert alert-danger">
-                <span>{{ message[1] }}</span>
-            </div>
-        {% endif %}
-     {% endfor %}
+    {% with messages = get_flashed_messages(with_categories='true') %}
+                        {% for message in messages %}
+                        {% if message[0] == 'error' %}
+                                <div class="alert alert-danger">
+                                    <span>{{ message[1] }}</span>
+                                </div>
+                            {% else %}
+                                <div class="alert alert-success">
+                                    <span>{{ message[1] }}</span>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                        {% endwith %}
     <main class="flex-grow-1">
         <div class="container-lg mt-3">
-            <h1>Сайт: {{ site["name"] }}</h1>
+            <h1>Сайт: {{ url["name"] }}</h1>
             <div class="table-responsive">
                 <table class="table table-bordered table-hover text-nowrap" data-test="url">
                     <tbody>
                         <tr>
                             <td>ID</td>
-                            <td>{{ site["id"] }}</td>
+                            <td>{{ url["id"] }}</td>
                         </tr>
                         <tr>
                             <td>Имя</td>
-                            <td>{{ site["name"] }}</td>
+                            <td>{{ url["name"] }}</td>
                         </tr>
                         <tr>
                             <td>Дата создания</td>
-                            <td>{{ site["created_at"] }}</td>
+                            <td>{{ url["created_at"] }}</td>
                         </tr>
                     </tbody>
                 </table>
             </div>
             <h2 class="mt-5 mb-3">Проверки</h2>
-            <form method="post" action="{{ url_for('create_new_check', id=site['id']) }}">
+            <form method="post" action="{{ url_for('check_url', id=url['id']) }}">
                 <input type="submit" class="btn btn-primary" value="Запустить проверку">
             </form>
             <div>

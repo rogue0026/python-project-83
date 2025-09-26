@@ -9,32 +9,34 @@
 </head>
 <body class="min-vh-100 d-flex flex-column">
     {% include "layouts/header.html" %}
-    {% for message in messages %}
-                                {% if message[0] == 'error' %}
-                                    <div class="alert alert-danger">
-                                        {{ message[1] }}
-                                    </div>
-                                {% else %}
-                                    <div class="alert alert-success">
-                                        {{ message[1] }}
-                                    </div>
-                                {% endif %}
-    {% endfor %}
+    {% with messages = get_flashed_messages(with_categories='true') %}
+                        {% for message in messages %}
+                        {% if message[0] == 'error' %}
+                                <div class="alert alert-danger">
+                                    <span>{{ message[1] }}</span>
+                                </div>
+                            {% else %}
+                                <div class="alert alert-success">
+                                    <span>{{ message[1] }}</span>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                        {% endwith %}
     <main class="flex-grow-1">
         <div class="container-lg mt-3">
             <div class="row">
                 <div class="col-12 col-md-10 col-lg-8 mx-auto border rounded-3 bg-light p-5">
                     <h1 class="display-3">Анализатор страниц</h1>
                     <p class="lead">Бесплатно проверяйте сайты на SEO-пригодность</p>
-                    <form method="post" action="/urls" class="d-flex justify-content-center">
-                        <label for="text" class="visually-hidden">Url для проверки</label>
-                        <input type="text" name="url" placeholder="https://www.example.com" value="" class="form-control form-control-lg" required>
+                    <form method="post" action="{{url_for('add_url')}}" class="d-flex justify-content-center">
+                        <label for="url_text" class="visually-hidden">Url для проверки</label>
+                        <input id="url_text" type="text" name="url" placeholder="https://www.example.com" value="" class="form-control form-control-lg" required>
                         <input type="submit" class="btn btn-primary  btn-lg ms-3 px-5 text-uppercase mx-3" value="Проверить">
                     </form>
                 </div>
             </div>
         </div>
-    </main>
+</main>
     {% include "layouts/footer.html" %}
 </body>
 </html>

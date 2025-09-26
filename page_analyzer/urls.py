@@ -16,11 +16,12 @@ class UrlsRepository:
     def _connect_to_db(self):
         return psycopg2.connect(self.dsn)
 
-    def save(self, url: str, created_at) -> tuple:
+    def save(self, url: str) -> tuple:
         sql_query = "INSERT INTO urls (name, created_at) VALUES (%s, %s);"
         message = None
         with self._connect_to_db() as db_connection:
             with db_connection.cursor() as cursor:
+                created_at = datetime.now()
                 try:
                     cursor.execute(sql_query, (url, created_at))
                     db_connection.commit()
@@ -47,12 +48,12 @@ class UrlsRepository:
                 cursor.execute(sql_query)
                 rows = cursor.fetchall()
                 for row in rows:
-                    status_code = row.status_code if row.status_code else ""
-                    last_check = row.last_check if row.last_check else ""
+                    # status_code = row.status_code if row.status_code else ""
+                    last_check = row.last_check.date() if row.last_check else ""
                     url_info = {
                         "id": row.id,
-                        "name": row.name,
-                        "status_code": status_code,
+                        "name": f"https://{row.name}",
+                        "status_code": row.status_code or "",
                         "last_check": last_check
                     }
                     results.append(url_info)
@@ -73,7 +74,7 @@ class UrlsRepository:
                 cursor.execute(sql_query, (url_id,))
                 row = cursor.fetchone()
                 result["id"] = row.id
-                result["name"] = row.name
+                result["name"] = f"https://{row.name}"
                 result["created_at"] = row.created_at.date()
         return result
 
@@ -126,10 +127,10 @@ class URLChecksRepository:
                     check = {
                         "id": row.id,
                         "url_id": row.url_id,
-                        "status_code": row.status_code,
-                        "h1": row.h1,
-                        "title": row.title,
-                        "description": row.description,
+                        "status_code": row.status_code or "",
+                        "h1": row.h1 or "",
+                        "title": row.title or "",
+                        "description": row.description or "",
                         "created_at": row.created_at.date()
                     }
                     results.append(check)
@@ -151,7 +152,7 @@ class URLChecksRepository:
                 cursor.execute(sql_query, (url_id,))
                 row = cursor.fetchone()
                 last_check_info = {
-                    "status_code": row.status_code if row.status_code else "",
+                    "status_code": row.status_code or "",
                     "created_at": row.created_at.date()
                 }
         return last_check_info

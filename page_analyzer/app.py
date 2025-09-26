@@ -1,39 +1,28 @@
-import datetime
-import os
-import secrets
-from urllib.parse import urlparse
+from urllib.error import HTTPError
 
 import requests
 from dotenv import load_dotenv
-from flask import (
-    Flask,
-    flash,
-    get_flashed_messages,
-    redirect,
-    render_template,
-    request,
-    url_for,
-)
-
+from flask import Flask
+from flask import render_template
+from flask import request
+from flask import flash
+from os import getenv
+from secrets import token_hex
+from page_analyzer.url_validator import validate_and_parse
+from page_analyzer.urls import UrlsRepository
+from page_analyzer.urls import URLChecksRepository
 from page_analyzer.parser import SiteChecker
-from page_analyzer.urls import URLChecksRepository, UrlsRepository
-from page_analyzer.url_validator import validate_url
-
 load_dotenv()
 app = Flask(__name__)
-app.config["SECRET_KEY"] = secrets.token_hex(16)
-dsn = os.getenv("DATABASE_URL")
-urls_repository = UrlsRepository(dsn)
-url_check_repository = URLChecksRepository(dsn)
+app.config['SECRET_KEY'] = token_hex(16)
+dsn = getenv('DATABASE_URL')
 
+urls_repository = UrlsRepository(dsn)
+url_checks_repository = URLChecksRepository(dsn)
 
 @app.route("/")
 def index():
-    messages = get_flashed_messages(
-        with_categories=True)
-    return render_template(
-        "index.html",
-        messages=messages)
+    return render_template("index.html"), 200
 
 
 @app.get("/urls")
@@ -41,61 +30,56 @@ def urls_index():
     sites = urls_repository.index()
     return render_template(
         "urls.html",
-        sites=sites
-    )
-
-
-@app.get("/urls/<id>")
-def url_show(id):
-    url_info = urls_repository.find(id)
-    url_checks = url_check_repository.index(id)
-    message = get_flashed_messages(with_categories=True)
-    if url_info:
-        return render_template(
-            "url_info.html",
-            site=url_info,
-            checks=url_checks,
-            messages=message)
-    return "Not found", 404
+        sites=sites), 200
 
 
 @app.post("/urls")
-def urls():
-    form_data = request.form.to_dict()
-    url_string = form_data.get("url")
-    err_msg = validate_url(url_string)
-    print(err_msg)
-    if err_msg:
-        return render_template(
-            "index.html", messages=[err_msg]), 422
-    parsed_url = urlparse(url_string)
-    status, msg = urls_repository.save(
-        f"{parsed_url.scheme}://{parsed_url.hostname}",
-        datetime.datetime.now())
-    flash(msg, status)
-    return redirect(url_for("index"))
+def add_url():
+    req = request.form.to_dict()
+    url = req.get("url")
+    result = validate_and_parse(url)
+    if "error" in result:
+        flash("Некорректный URL", "error")
+        return render_template("index.html"), 422
+    hostname = result.get("success")
+    category, msg = urls_repository.save(hostname)
+    flash(msg, category)
+    return render_template("index.html"), 200
+
+
+@app.get("/urls/<id>")
+def url_checks_index(id):
+    url_info = urls_repository.find(id)
+    url_checks = url_checks_repository.index(id)
+    return render_template(
+        "url_checks.html",
+        url=url_info,
+        checks=url_checks), 200
 
 
 @app.post("/urls/<id>/checks")
-def create_new_check(id):
+def check_url(id):
     url_info = urls_repository.find(id)
-    url_address = url_info.get("name")
     try:
-        response = requests.get(url_address)
-        response.raise_for_status()
-        checker = SiteChecker(response.text)
-        h1_content = checker.check_for_h1()
+        resp = requests.get(url_info["name"])
+        resp.raise_for_status()
+        checker = SiteChecker(resp.text)
+        title = checker.check_for_title()
+        h1 = checker.check_for_h1()
         meta = checker.check_for_meta_description()
-        title_content = checker.check_for_title()
         check_info = {
-            "url_id": id,
-            "status_code": response.status_code,
-            "h1": h1_content if h1_content else "",
-            "title": title_content if title_content else "",
-            "description": meta if meta else ""
+            "url_id": url_info["id"],
+            "status_code": resp.status_code,
+            "h1": h1,
+            "title": title,
+            "description": meta
         }
-        url_check_repository.save(check_info)
-        flash("Страница успешно проверена", "success")
+        url_checks_repository.save(check_info)
+        checks = url_checks_repository.index(id)
+        return render_template(
+            "url_checks.html", url=url_info, checks=checks), 200
     except (requests.HTTPError, requests.ConnectionError):
         flash("Произошла ошибка при проверке", "error")
-    return redirect(url_for("url_show", id=id))
+        checks = url_checks_repository.index(id)
+        return render_template(
+            "url_checks.html", url=url_info, checks=checks), 500
