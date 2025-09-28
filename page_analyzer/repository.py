@@ -28,7 +28,24 @@ class URLRepository:
             with conn.cursor(cursor_factory=NamedTupleCursor) as cur:
                 cur.execute(sql)
                 rows = cur.fetchall()
-                return rows
+                results = []
+                for row in rows:
+                    status_code = row.status_code
+                    if status_code is None:
+                        status_code = ""
+                    last_check = row.last_check
+                    if last_check is None:
+                        last_check = ""
+                    else:
+                        last_check = last_check.date()
+                    info = {
+                        "id": row.id,
+                        "name": row.name,
+                        "status_code": status_code,
+                        "last_check": last_check
+                    }
+                    results.append(info)
+                return results
 
     def find_by_id(self, id: int) -> URL:
         sql = """

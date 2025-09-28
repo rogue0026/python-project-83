@@ -26,7 +26,7 @@ url_checks_repository = URLCheckRepository(dsn)
 
 @app.route("/")
 def index():
-    return render_template("index.html")
+    return render_template("index.html"), 200
 
 
 @app.post("/urls")
@@ -53,18 +53,17 @@ def urls():
     urls = url_repository.index()
     return render_template(
         "urls.html",
-    urls=urls)
+    urls=urls), 200
 
 
 @app.get("/urls/<id>")
 def url_details(id):
     url_detailed_info = url_repository.find_by_id(id)
     url_checks = url_checks_repository.index(id)
-
     return render_template(
         "url_checks.html",
         url=url_detailed_info,
-        checks=url_checks)
+        checks=url_checks), 200
 
 
 @app.post("/urls/<id>/checks")
@@ -88,6 +87,6 @@ def check_url(id):
         url_checks_repository.save(check)
         flash("Страница успешно проверена", "success")
         return redirect(url_for("url_details", id=id))
-    except requests.HTTPError:
+    except (requests.HTTPError, requests.exceptions.ConnectionError):
         flash("Произошла ошибка при проверке", "error")
-        return render_template("url_checks.html")
+        return redirect(url_for("url_details", id=id))
