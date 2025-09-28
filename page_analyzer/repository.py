@@ -13,23 +13,22 @@ class URLRepository:
     def connect_to_db(self):
         return psycopg2.connect(self.conn_string)
 
-    def index(self):
+    def index(self) -> list[dict]:
         sql = """
-        SELECT
-            id,
-            name,
-            created_at
-        FROM urls
-        ORDER BY created_at DESC;"""
+            SELECT
+                urls.id,
+                urls.name,
+                url_checks.status_code,
+                max(url_checks.created_at) as last_check
+            FROM urls
+            LEFT JOIN url_checks ON urls.id = url_checks.url_id
+            GROUP BY urls.id, urls.name, url_checks.status_code;
+        """
         with self.connect_to_db() as conn:
             with conn.cursor(cursor_factory=NamedTupleCursor) as cur:
                 cur.execute(sql)
                 rows = cur.fetchall()
-                results = []
-                for row in rows:
-                    url = URL(row.id, row.name, row.created_at)
-                    results.append(url)
-                return results
+                return rows
 
     def find_by_id(self, id: int) -> URL:
         sql = """
@@ -109,30 +108,30 @@ class URLCheckRepository:
                                   check.created_at))
             conn.commit()
 
-    def index(self, url_id: int):
-        sql = """
-        SELECT
-            id,
-            url_id,
-            status_code,
-            h1,
-            title,
-            description,
-            created_at
-        FROM url_checks
-        WHERE url_id=%s;"""
+    def index(self, url_id) -> list[URLCheck]:
         with self.connect_to_db() as conn:
-            with conn.cursor() as cur:
+            sql = """
+            SELECT
+                id,
+                url_id,
+                status_code,
+                h1,
+                title,
+                description,
+                created_at
+            FROM url_checks
+            WHERE url_id=%s;"""
+            with conn.cursor(cursor_factory=NamedTupleCursor) as cur:
                 cur.execute(sql, (url_id,))
                 rows = cur.fetchall()
                 results = []
                 for row in rows:
-                    check_info = URLCheck(row[0],
-                                          row[1],
-                                          row[2],
-                                          row[3],
-                                          row[4],
-                                          row[5],
-                                          row[6])
-                    results.append(check_info)
-                return results
+                    url_check = URLCheck(row.id,
+                                         row.url_id,
+                                         row.status_code,
+                                         row.h1,
+                                         row.title,
+                                         row.description,
+                                         row.created_at)
+                    results.append(url_check)
+        return results

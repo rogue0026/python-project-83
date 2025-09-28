@@ -30,7 +30,7 @@
                         <td>
                             <a href="{{ url_for('url_details', id=url.id) }}">{{ url.name }}</a>
                         </td>
-                        <td>{{ url.last_check }}</td>
+                        <td>{{ url.last_check.date() }}</td>
                         <td>{{ url.status_code }}</td>
                     </tr>
                     {% endfor %}

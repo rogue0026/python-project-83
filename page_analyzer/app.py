@@ -60,6 +60,7 @@ def urls():
 def url_details(id):
     url_detailed_info = url_repository.find_by_id(id)
     url_checks = url_checks_repository.index(id)
+
     return render_template(
         "url_checks.html",
         url=url_detailed_info,
