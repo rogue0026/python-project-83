@@ -1,20 +1,14 @@
-from datetime import datetime
-import requests
 import os
+from datetime import datetime
 
+import requests
 from dotenv import load_dotenv
-from flask import Flask
-from flask import render_template
-from flask import request
-from flask import flash
-from flask import url_for
-from flask import redirect
-from page_analyzer.url_validator import validate_and_normalize
-from page_analyzer.repository import URLRepository
-from page_analyzer.repository import URLCheckRepository
-from page_analyzer.site_checker import SiteChecker
-from page_analyzer.dao import URLCheck
+from flask import Flask, flash, redirect, render_template, request, url_for
 
+from page_analyzer.dao import URLCheck
+from page_analyzer.repository import URLCheckRepository, URLRepository
+from page_analyzer.site_checker import SiteChecker
+from page_analyzer.url_validator import validate_and_normalize
 
 load_dotenv()
 app = Flask(__name__)

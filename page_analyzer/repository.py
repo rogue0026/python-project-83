@@ -2,8 +2,8 @@ from datetime import datetime
 
 import psycopg2
 from psycopg2.extras import NamedTupleCursor
-from page_analyzer.dao import URL
-from page_analyzer.dao import URLCheck
+
+from page_analyzer.dao import URL, URLCheck
 
 
 class URLRepository:
