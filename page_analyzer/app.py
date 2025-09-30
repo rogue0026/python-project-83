@@ -1,14 +1,15 @@
-from urllib.parse import urlparse
 import os
 from datetime import datetime
+from urllib.parse import urlparse
+
 import requests
 from dotenv import load_dotenv
 from flask import Flask, flash, redirect, render_template, request, url_for
+
 from page_analyzer.dto import URLCheck
 from page_analyzer.repository import URLCheckRepository, URLRepository
 from page_analyzer.site_checker import SiteChecker
 from page_analyzer.url_validator import validate_url
-
 
 load_dotenv()
 app = Flask(__name__)
