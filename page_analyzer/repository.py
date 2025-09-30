@@ -94,6 +94,7 @@ class URLRepository:
                 "id": row.id
             }
         except psycopg2.errors.UniqueViolation:
+            self.__db_connection.rollback()
             row = self.find_by_name(url_name)
             result = {
                 "status": "already exists",
